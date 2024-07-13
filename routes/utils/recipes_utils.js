@@ -6,7 +6,6 @@ const api_domain = "https://api.spoonacular.com/recipes";
  * @param {*} recipes_info
  */
 
-console.log(process.env.spooncular_apiKey);
 async function getRecipeInformation(recipe_id) {
   return await axios.get(`${api_domain}/${recipe_id}/information`, {
     params: {
@@ -15,7 +14,29 @@ async function getRecipeInformation(recipe_id) {
     },
   });
 }
+const getRecipesPreview = async (recipes_id_array, username) => {
+  let promises = [];
+  recipes_id_array.map((recipe_id) =>
+    promises.push(getRecipeDetails(recipe_id))
+  );
 
+  let recipes_info = await Promise.all(promises);
+  let recipes_preview = [];
+  recipes_info.map((recipe_info) => {
+    recipes_preview.push({
+      id: recipe_info.id,
+      title: recipe_info.title,
+      readyInMinutes: recipe_info.readyInMinutes,
+      image: recipe_info.image,
+      popularity: recipe_info.popularity,
+      vegan: recipe_info.vegan,
+      vegetarian: recipe_info.vegetarian,
+      glutenFree: recipe_info.glutenFree,
+    });
+  });
+
+  return recipes_preview;
+};
 async function getRecipeDetails(recipe_id) {
   let recipe_info = await getRecipeInformation(recipe_id);
   let {
@@ -41,14 +62,8 @@ async function getRecipeDetails(recipe_id) {
   };
 }
 
-async function searchRecipe(
-  recipeName,
-  cuisine,
-  diet,
-  intolerance,
-  number,
-  username
-) {
+async function searchRecipe(request) {
+  const { recipeName, cuisine, diet, intolerance, number, username } = request;
   const response = await axios.get(`${api_domain}/complexSearch`, {
     params: {
       query: recipeName,
@@ -67,3 +82,5 @@ async function searchRecipe(
 }
 
 exports.getRecipeDetails = getRecipeDetails;
+exports.searchRecipe = searchRecipe;
+exports.getRecipeInformation = getRecipeInformation;

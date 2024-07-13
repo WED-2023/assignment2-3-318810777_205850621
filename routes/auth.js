@@ -1,14 +1,11 @@
 var express = require("express");
 var router = express.Router();
-const MySql = require("../routes/utils/MySql");
 const DButils = require("../routes/utils/DButils");
 const bcrypt = require("bcrypt");
 
 router.post("/Register", async (req, res, next) => {
   try {
-    // parameters exists
-    // valid parameters
-    // username exists
+    // Extract user details from the request body
     let user_details = {
       username: req.body.username,
       firstname: req.body.firstname,
@@ -16,24 +13,37 @@ router.post("/Register", async (req, res, next) => {
       country: req.body.country,
       password: req.body.password,
       email: req.body.email,
-      profilePic: req.body.profilePic
-    }
-    let users = [];
-    users = await DButils.execQuery("SELECT username from users");
+      profilePic: req.body.profilePic,
+    };
+    console.log(user_details);
+    // Check if the username already exists
+    let users = await DButils.execQuery(
+      "SELECT username FROM users WHERE username = ?",
+      [user_details.username]
+    );
+    if (users.length > 0) throw { status: 409, message: "Username taken" };
 
-    if (users.find((x) => x.username === user_details.username))
-      throw { status: 409, message: "Username taken" };
-
-    // add the new username
+    // Hash the password
     let hash_password = bcrypt.hashSync(
       user_details.password,
       parseInt(process.env.bcrypt_saltRounds)
     );
+
+    // Insert the new user into the database
     await DButils.execQuery(
-      `INSERT INTO users VALUES ('${user_details.username}', '${user_details.firstname}', '${user_details.lastname}',
-      '${user_details.country}', '${hash_password}', '${user_details.email}')`
+      `INSERT INTO users (username, firstname, lastname, country, password, email, profilePic) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        user_details.username,
+        user_details.firstname,
+        user_details.lastname,
+        user_details.country,
+        hash_password,
+        user_details.email,
+        user_details.profilePic,
+      ]
     );
-    res.status(201).send({ message: "user created", success: true });
+    req.session.user_id = user_details.username;
+    res.status(201).send({ message: "User created", success: true });
   } catch (error) {
     next(error);
   }
@@ -41,36 +51,53 @@ router.post("/Register", async (req, res, next) => {
 
 router.post("/Login", async (req, res, next) => {
   try {
-    // check that username exists
-    const users = await DButils.execQuery("SELECT username FROM users");
-    if (!users.find((x) => x.username === req.body.username))
+    // Check if the username exists
+    console.log(req.body);
+    const users = await DButils.execQuery(
+      "SELECT username, password FROM users WHERE username = ?",
+      [req.body.username]
+    );
+    if (users.length === 0)
       throw { status: 401, message: "Username or Password incorrect" };
 
-    // check that the password is correct
-    const user = (
-      await DButils.execQuery(
-        `SELECT * FROM users WHERE username = '${req.body.username}'`
-      )
-    )[0];
+    const user = users[0];
 
+    // Check if the password is correct
     if (!bcrypt.compareSync(req.body.password, user.password)) {
       throw { status: 401, message: "Username or Password incorrect" };
     }
 
-    // Set cookie
-    req.session.user_id = user.user_id;
+    // Set session
+    req.session.user_id = user.username;
 
-
-    // return cookie
-    res.status(200).send({ message: "login succeeded", success: true });
+    // Return success message
+    res.status(200).send({ message: "Login succeeded", success: true });
   } catch (error) {
     next(error);
   }
 });
 
 router.post("/Logout", function (req, res) {
-  req.session.reset(); // reset the session info --> send cookie when  req.session == undefined!!
-  res.send({ success: true, message: "logout succeeded" });
+  req.session.reset(); // Reset the session info
+  res.send({ success: true, message: "Logout succeeded" });
+});
+
+router.get("/users/:username", async (req, res, next) => {
+  try {
+    const username = req.params.username;
+    const user = await DButils.execQuery(
+      "SELECT username FROM users WHERE username = ?",
+      [username]
+    );
+
+    if (user.length === 0) {
+      return res.status(404).send("User not found");
+    }
+
+    res.status(200).send(user[0]);
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;

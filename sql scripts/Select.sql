@@ -1,1 +1,1 @@
-SELECT * FROM mydb.users;
+SELECT * FROM mydatabase.users;
