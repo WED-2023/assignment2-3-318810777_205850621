@@ -46,7 +46,7 @@ app.use("/auth", auth); // Routes that do not require authentication
 // app.use((req, res, next) => {
 //   if (!req.session.user_id) {
 //     console.log("no user id");
-//     return res.status(401).send("hello");
+//     return res.status(401).send("Unauthorized");
 //   }
 //   next();
 // });
