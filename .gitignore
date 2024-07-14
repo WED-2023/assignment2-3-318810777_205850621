@@ -2,6 +2,6 @@
 node_modules
 .env
 .vscode
-dist\*
+/dist
 #codes/routes/recipes.js
 #codes\routes\recipes.js
