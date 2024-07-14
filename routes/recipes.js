@@ -1,8 +1,10 @@
 var express = require("express");
 var router = express.Router();
+require("dotenv").config();
+
 const recipes_utils = require("./utils/recipes_utils");
 
-router.get("/", (req, res) => res.send("timor da losa"));
+router.get("/", (req, res) => res.send("timor da queen"));
 
 /**
  * This path is for searching a recipe
@@ -22,22 +24,25 @@ router.get("/search", async (req, res, next) => {
       number,
       username: req.username,
     });
-    res.send(results);
+    res.status(200).send(results);
   } catch (error) {
     next(error);
   }
+  
 
   /**
    * This path returns a full details of a recipe by its id
    */
-  router.get("/:recipeId", async (req, res, next) => {
-    try {
-      const recipe = await recipes_utils.getRecipeDetails(req.params.recipeId);
-      res.send(recipe);
-    } catch (error) {
-      next(error);
-    }
-  });
+  
+});
+router.get("/:recipeId", async (req, res, next) => {
+  try {
+    console.log(req?.params?.recipeId);
+    const recipe = await recipes_utils.getRecipeDetails(req.params.recipeId);
+    res.status(200).send(recipe);
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;

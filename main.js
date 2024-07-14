@@ -70,21 +70,22 @@ app.use("/recipes", recipes);
 
 app.get("/alive", (req, res) => res.send("I'm alive"));
 
-app.get("/test", async (req, res) => {
-  try {
-    console.log(req.query.username);
-    const users = await DButils.execQuery(
-      `SELECT username FROM users WHERE username='${req.query.username}'`
-    );
-    if (users.length === 0) {
-      res.send("No such user");
-    }
-    res.send(users);
-  } catch (err) {
-    console.error("Error in /test endpoint:", err);
-    res.status(500).send("An error occurred");
-  }
-});
+// app.get("/test", async (req, res) => {
+//   try {
+//     if(!req.query.username) res.status(404).send("No username entered");
+//     // console.log(req.query.username);
+//     const users = await DButils.execQuery(
+//       `SELECT username FROM users WHERE username='${req.query.username}'`
+//     );
+//     if (users.length === 0) {
+//       res.send("No such user");
+//     }
+//     res.status(200).send(JSON.stringify(users));
+//   } catch (err) {
+//     console.error("Error in /test endpoint:", err);
+//     res.status(500).send("An error occurred");
+//   }
+// });
 
 // Default error handler
 app.use(function (err, req, res, next) {

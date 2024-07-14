@@ -1,4 +1,6 @@
 const axios = require("axios");
+require("dotenv").config();
+
 const api_domain = "https://api.spoonacular.com/recipes";
 
 /**
@@ -14,6 +16,9 @@ async function getRecipeInformation(recipe_id) {
     },
   });
 }
+// (async () => {
+//   console.log(await getRecipeInformation(43565));
+// })();
 const getRecipesPreview = async (recipes_id_array, username) => {
   let promises = [];
   recipes_id_array.map((recipe_id) =>
