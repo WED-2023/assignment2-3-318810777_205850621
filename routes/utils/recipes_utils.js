@@ -68,7 +68,14 @@ async function getRecipeDetails(recipe_id) {
 }
 
 async function searchRecipe(request) {
-  const { recipeName, cuisine, diet, intolerance, number, username } = request;
+  const {
+    recipeName,
+    cuisine,
+    diet,
+    intolerance,
+    number = 100,
+    username,
+  } = request;
   const response = await axios.get(`${api_domain}/complexSearch`, {
     params: {
       query: recipeName,
