@@ -15,30 +15,32 @@ router.get("/search", async (req, res, next) => {
     const cuisine = req.query.cuisine;
     const diet = req.query.diet;
     const intolerance = req.query.intolerance;
-    const number = req.query.number || 2; // Limit the number of results to 2 by default to prevent large responses and reduce api usage
-    const results = await recipes_utils.searchRecipe({
+    const number = req.query.number || 3;
+    const offset = req.query.offset || 0;
+    const { recipes, total } = await recipes_utils.searchRecipe({
       recipeName,
       cuisine,
       diet,
       intolerance,
       number,
       username: req.username,
+      offset,
     });
-    res.status(200).send(results);
+    console.log(recipes);
+    res.status(200).send({ recipes, total });
   } catch (error) {
     next(error);
   }
-  
 
   /**
    * This path returns a full details of a recipe by its id
    */
-  
 });
 router.get("/:recipeId", async (req, res, next) => {
   try {
     console.log(req?.params?.recipeId);
     const recipe = await recipes_utils.getRecipeDetails(req.params.recipeId);
+    console.log(`Recipe:`, recipe);
     res.status(200).send(recipe);
   } catch (error) {
     next(error);
